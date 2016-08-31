@@ -29,7 +29,7 @@ wget -q https://valkyrierobotics.com/debian/vimrc -O ~/.vimrc
 sudo chmod 664 ~/.vimrc
 sudo chown vagrant ~/.vimrc
 
-sudo apt-get install -y vim-gtk curl zsh git sl
+sudo apt-get install -y vim-gtk curl zsh git sl tmux tree
 
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/valkyrierobotics/oh-my-zsh/master/tools/install.sh)"
 
@@ -41,7 +41,6 @@ sed -i 's/lee/vagrant/g' ~/.zshrc
 
 sed -i 's/haribo/flazz/g' ~/.zshrc
 
-chsh -s $(which zsh)
 
 curl -fLo /home/vagrant/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
@@ -70,6 +69,8 @@ sudo chmod +x /home/vagrant/z.sh
 sudo apt-get install python libpython-dev ruby clang-format-3.5 clang-3.6 gfortran libblas-dev liblapack-dev python-scipy python-matplotlib -yq
 
 sudo chown -R vagrant:vagrant /home/vagrant
+
+sudo chsh vagrant -s $(which zsh)
 
 ######################
 ######= Ricing =######
