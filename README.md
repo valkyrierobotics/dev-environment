@@ -4,7 +4,7 @@
 the robot easier. It's hard to dual-boot, but it's up to you to decide if it's
 worth it. We will always help with the process.*
 
-**If you get an error involving filesystems, run `vagrant plugin install vagrant-vbguest'`. If that fails, ask for assistance.**
+**If you get an error involving filesystems, run `vagrant plugin install vagrant-vbguest`. If that fails, ask for assistance.**
 
 **If you have AMD, VT-x is probably already on**
 
