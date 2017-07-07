@@ -25,15 +25,21 @@ sudo apt-get update -yq
 ######= Terminal & Vim =######
 ##############################
 
-wget -q https://valkyrierobotics.com/debian/vimrc -O ~/.vimrc
+sudo apt-get install -y vim-gtk curl zsh git sl tmux tree
+
+git clone https://github.com/valkyrierobotics/dotfiles
+
+cp dotfiles/vimrc ~/.vimrc
+
 sudo chmod 664 ~/.vimrc
 sudo chown vagrant ~/.vimrc
 
-sudo apt-get install -y vim-gtk curl zsh git sl tmux tree
 
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/valkyrierobotics/oh-my-zsh/master/tools/install.sh)"
 
-wget -q https://valkyrierobotics.com/debian/zshrc -O ~/.zshrc
+rm ~/.zshrc
+cp dotfiles/zshrc ~/.zshrc
+
 sudo chmod 644 ~/.zshrc
 sudo chown vagrant ~/.zshrc
 
