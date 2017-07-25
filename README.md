@@ -1,65 +1,64 @@
-# Setting up your Valkyrie Development Environment
+Requirements
+--------------------------------------------------------------------------------
+1. Install Vagrant <https://www.vagrantup.com/downloads.html>
 
-*Installing Debian Jessie x64 will make your life easier and make deploying to
-the robot easier. It's hard to dual-boot, but it's up to you to decide if it's
-worth it. We will always help with the process.*
+1. Install VirtualBox <https://www.virtualbox.org/wiki/Downloads>
 
-**If you get an error involving filesystems, run `vagrant plugin install vagrant-vbguest`. If that fails, ask for assistance.**
+1. Add `vagrant` and `VBoxManage` to your PATH.
+    - This is most likely already done by the installation binaries.
+      It's added to the system path.
+    - To test this, type these commands in a terminal:
 
-**If you have AMD, VT-x is probably already on**
+            ~$ vagrant --version
+            Vagrant 1.8.1
+            ~$ VBoxManage --version
+            5.0.14r105127
 
-## Table of Contents
+    - You may need to log out and back in for the path modifications to take
+      effect.
 
-* [Windows](#windows)
-    * [Notes](#notes)
-* [Debian/Ubuntu](#debianubuntu)
-    * [Notes](#notes-1)
-* [Mac OS X](#mac-os-x)
-    * [Notes](#notes-2)
+1. On my Jessie installation I had to apply the following patch before I could
+   successfully shut down and reboot the VM.
 
-## Windows
+        --- /opt/vagrant/embedded/gems/gems/vagrant-1.7.4/plugins/guests/debian8/cap/halt.rb    2015-07-17 13:15:13.000000000 -0700
+        +++ new_halt.rb 2015-11-18 20:11:29.003055639 -0800
+        @@ -4,7 +4,7 @@
+               class Halt
+                 def self.halt(machine)
+                   begin
+        -            machine.communicate.sudo("shutdown -h -H")
+        +            machine.communicate.sudo("systemctl poweroff")
+                   rescue IOError
+                     # Do nothing, because it probably means the machine shut down
+                     # and SSH connection was lost.
 
-### Notes
-* We assume that you already have git.
-* You need to turn on VT-x which could also be called Intel Virtualization Technology or Virtualization Extensions in BIOS. Try [this guide](http://www.howtogeek.com/213795/how-to-enable-intel-vt-x-in-your-computers-bios-or-uefi-firmware/)
+Usage
+--------------------------------------------------------------------------------
+1. Check this folder out on your computer somewhere.
 
-1. Install the following software:
-    - [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
-    - [Vagrant](http://www.vagrantup.com/)
-    - [PuTTY and PuTTYGen](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html) *If you already have Cygwin (or git on your PATH), don't install these.*
+        svn co https://robotics.mvla.net/svn/frc971/2016/trunk/src/vagrant_dev_vm
 
-2. Clone the following git repository: `https://github.com/valkyrierobotics/dev-environment`
-3. Move into the cloned directory, i.e `cd dev-environment`
-4. Run `vagrant up` and wait for the bootstrapping process to complete.
-5. At this point, `vagrant ssh` should allow you to access the VirtualBox. If not, run `vagrant ssh-config` and then
-use PuTTY to connect to that IP and port with the username "vagrant" and password "vagrant."
-6. You can now use PuTTYGen to convert the OpenSSH key used by vagrant into a PPK and save it and then access the VirtualBox instance through pubkey.
+1. Go into the directory and build the VM.
 
-## Debian/Ubuntu
+        vagrant up
 
-### Notes
-* We assume you've already installed git and other basic Linux tools
-* You need to turn on VT-x which could also be called Intel Virtualization Technology or Virtualization Extensions in BIOS. Try [this guide](http://www.howtogeek.com/213795/how-to-enable-intel-vt-x-in-your-computers-bios-or-uefi-firmware/)
-* You can install .deb files using `sudo dpkg -i blahblahblah.deb`
+1. Some errors during the `vagrant up` process can be addressed by
+   re-provisioning the vagrant box. This is useful if, for example, an
+   `apt-get` invocation timed out and caused the provisioning process to abort.
 
-1. Install the following software:
-    - [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
-    - [Vagrant](http://www.vagrantup.com/)
-2. Clone the following git repository: `https://github.com/valkyrierobotics/dev-environment`
-3. Move into the cloned directory, i.e `cd dev-environment`
-4. Run `vagrant up` and wait for the bootstrapping process to complete.
-5. At this point, `vagrant ssh` should allow you to access the VirtualBox.
+        vagrant provision
 
-## Mac OS X
+1. Once build, reboot the VM so it starts the GUI properly.
 
-### Notes
-* We assume you've already installed git and other basic tools
-* Unless you have a really old Mac, VT-x is probably already turned on. You can use `sysctl -a | grep machdep.cpu.features`. If you see **VMX** in the output, then you're fine.
+        vagrant reload
 
-1. Install the following software:
-    - [Virtual Box](https://www.virtualbox.org/wiki/Downloads)
-    - [Vagrant](http://www.vagrantup.com/)
-2. Clone the following git repository: `https://github.com/valkyrierobotics/dev-environment`
-3. Move into the cloned directory, i.e `cd dev-environment`
-4. Run `vagrant up` and wait for the bootstrapping process to complete.
-5. At this point, `vagrant ssh` should allow you to access the VirtualBox.
+1. You can then log in and open a terminal. The username and password are both
+   `user`.
+
+1. Download the code and build it.
+
+        git clone https://USERNAME@robotics.mvla.net/gerrit/971-Robot-Code
+        cd 971-Robot-Code
+        bazel build //y2016/... -- $(cat NO_BUILD_AMD64)
+
+   where USERNAME is the same username you use to log into SVN.

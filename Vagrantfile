@@ -1,36 +1,56 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby
+# Vagrantfile API/syntax version. Don't touch unless you know what you're
+# doing!
+VAGRANTFILE_API_VERSION = "2"
 
-# Don't change this line unless you know what you're doing
-Vagrant.configure("2") do |config|
-  # Common configuration is documented and set up below.
-  # For a complete reference, see online documentation at
-  # https://docs.vagrantup.com
+# Install the necessary plugins.
+required_plugins = %w( vagrant-persistent-storage )
+required_plugins.each do |plugin|
+  unless Vagrant.has_plugin? plugin || ARGV[0] == 'plugin' then
+    exec "vagrant plugin install #{plugin};vagrant #{ARGV.join(" ")}"
+  end
+end
 
-  # To start off, we specify a box, which are indexed at
-  # https://atlas.hashicorp.com/search
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # All Vagrant configuration is done here. The most common configuration
+  # options are documented and commented below. For a complete reference,
+  # please see the online documentation at vagrantup.com.
+
+  # Every Vagrant virtual environment requires a box to build off of.
   config.vm.box = "debian/jessie64"
-  # Set the location of the script we use to provision the box properly for
-  # our uses.
-  config.vm.provision :shell, path: "bootstrap.sh"
 
-  # Create a forwarded port so that port 80 in the box appears as port 8080 in
-  # the host. Edit this if you need more forwarded ports.
-  #
-  # This is useful for web who might want to test with gulp or jekyll serve.
-  config.vm.network "forwarded_port", guest: 80, host: 8080
-
-  # Sync the folder "Valkyrie" in this directory (on host) to the folder
-  # /home/valkyrie/Valkyrie in the guest.
-  config.vm.synced_folder "Valkyrie", "/home/vagrant/Valkyrie"
-
-  # Configuration specific to virtualbox. These exist for other providers
-  # as well.
   config.vm.provider "virtualbox" do |vb|
-    vb.gui = false
+    # Don't boot with headless mode
+    vb.gui = true
+    vb.name = "299 Virtual Environment"
 
-    vb.memory = "4096"
+    # There are two shortcuts for modifying number of CPUs and amount of
+    # memory. Modify them to your liking.
+    vb.cpus = 2
+    vb.memory = 1024 * 2
   end
 
-  config.ssh.forward_x11 = true
+  # Use rsync to sync the /vagrant folder.
+  # NOTE: If you change these settings they will not take effect until you
+  # reboot the VM -- i.e. run a "vagrant reload".
+  config.vm.synced_folder ".", "/vagrant", type: "rsync",
+      rsync__exclude: [".git/", ".svn/", "workspace.vdi"], rsync__verbose: true
+
+  # Set up apt and install packages necessary for building the code.
+  config.vm.provision :shell, inline: "/vagrant/setup_apt.sh"
+  config.vm.provision :shell, inline: "/vagrant/setup_extra_storage.sh"
+  config.vm.provision :shell, inline: "/vagrant/setup_code_building.sh"
+  config.vm.provision :shell, inline: "/vagrant/setup_desktop.sh"
+  config.vm.provision :shell, inline: "/vagrant/setup_misc_packages.sh"
+  config.vm.provision :shell, inline: "/vagrant/setup_vbox_guest_additions.sh"
+
+  # Add a second disk so we have plenty of space to compile the code.
+  config.persistent_storage.enabled = true
+  config.persistent_storage.location = "workspace.vdi"
+  config.persistent_storage.size = 40000 # MiB
+  config.persistent_storage.use_lvm = false
+  config.persistent_storage.filesystem = 'ext4'
+  config.persistent_storage.mountpoint = '/home/user'
+
+  # Forward the scouting app's port.
+  config.vm.network :forwarded_port, guest: 5000, host: 5000, auto_correct: true
 end
