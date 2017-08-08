@@ -6,6 +6,7 @@ set -u
 export DEBIAN_FRONTEND=noninteractive
 
 readonly PKGS=(
+  ask-pass
   clang-3.6
   clang-format-3.5
   gfortran
