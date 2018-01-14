@@ -3,7 +3,7 @@
 VAGRANTFILE_API_VERSION = "2"
 
 # Install the necessary plugins.
-required_plugins = %w( vagrant-persistent-storage vagrant-vbguest )
+required_plugins = %w( vagrant-persistent-storage )
 required_plugins.each do |plugin|
   unless Vagrant.has_plugin? plugin || ARGV[0] == 'plugin' then
     exec "vagrant plugin install #{plugin};vagrant #{ARGV.join(" ")}"

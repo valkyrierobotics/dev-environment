@@ -7,6 +7,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 readonly PKGS=(
   ssh-askpass
+  bazel
   clang-3.6
   clang-format-3.5
   gfortran
@@ -23,7 +24,6 @@ readonly PKGS=(
   python-scipy
   resolvconf
   ruby
-  unzip
 )
 
 # Set up the backports repo.
@@ -37,9 +37,22 @@ deb  http://llvm.org/apt/jessie/ llvm-toolchain-jessie-3.6 main
 deb-src  http://llvm.org/apt/jessie/ llvm-toolchain-jessie-3.6 main
 EOT
 
+# Set up the 971-managed bazel repo.
+cat > /etc/apt/sources.list.d/bazel-971.list <<EOT
+deb http://robotics.mvla.net/files/frc971/packages jessie main
+EOT
+
 # Enable user namespace for sandboxing.
 cat > /etc/sysctl.d/99-enable-user-namespaces.conf <<EOT
 kernel.unprivileged_userns_clone = 1
+EOT
+
+# We need to explicitly pull in the java certificates from backports. Otherwise
+# bazel won't install properly.
+cat > /etc/apt/preferences.d/java_certificates <<EOT
+Package: ca-certificates-java
+Pin: release a=jessie-backports
+Pin-Priority: 900
 EOT
 
 # Accept the LLVM GPG key so we can install their packages.
@@ -50,7 +63,3 @@ apt-get update
 for pkg in "${PKGS[@]}"; do
   apt-get install -y -f --force-yes "$pkg"
 done
-
-mkdir /tmp/image-making/ -p
-wget -qO /tmp/image-making/installer.sh https://github.com/bazelbuild/bazel/releases/download/0.5.2/bazel-0.5.2-installer-linux-x86_64.sh
-bash /tmp/image-making/installer.sh && rm -r /tmp/image-making
